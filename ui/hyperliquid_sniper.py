@@ -129,6 +129,9 @@ class HyperliquidSniper(QMainWindow):
         """
 
     def initUI(self):
+        from utils.config_loader import load_api_keys
+        from core.trader import TraderAccount
+
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
 
@@ -146,6 +149,10 @@ class HyperliquidSniper(QMainWindow):
         main_layout = QHBoxLayout(content_widget)
         main_layout.setSpacing(10)
         main_layout.setContentsMargins(10, 10, 10, 10)
+
+        # Load accounts from config
+        self.accounts_config = load_api_keys()[:10]
+        self.trader_accounts = [TraderAccount(**cfg) for cfg in self.accounts_config]
 
         # Create the three main panels
         left_panel = self.create_left_panel()
@@ -230,21 +237,22 @@ class HyperliquidSniper(QMainWindow):
         """Create the accounts management panel"""
         left_layout = QVBoxLayout()
         
-        # Header
         header = QLabel("ACCOUNTS MANAGEMENT")
         header.setStyleSheet("font-weight: bold; font-size: 14px; color: #ffd700; margin-bottom: 10px;")
         left_layout.addWidget(header)
 
-        # Account groups
-        for i in range(1, 4):
-            account_group = self.create_account_group(i)
+        # Dynamically create account groups from loaded accounts
+        self.account_groups = []
+        for i, trader in enumerate(getattr(self, 'trader_accounts', [])):
+            account_group = self.create_account_group(i+1, trader)
             left_layout.addWidget(account_group)
+            self.account_groups.append(account_group)
 
         left_layout.addStretch()
         return left_layout
 
-    def create_account_group(self, account_num):
-        """Create individual account group"""
+    def create_account_group(self, account_num, trader=None):
+        """Create individual account group, optionally with trader info"""
         group = QGroupBox(f"Account {account_num}")
         layout = QVBoxLayout()
 
@@ -256,40 +264,28 @@ class HyperliquidSniper(QMainWindow):
         status_layout.addWidget(checkbox)
         
         # Status label
-        if account_num == 1:
-            status = QLabel("ACTIVE")
-            status.setStyleSheet("color: #00ff7f; font-weight: bold;")
-        elif account_num == 2:
-            status = QLabel("INACTIVE")
-            status.setStyleSheet("color: #ff4757; font-weight: bold;")
-        else:
-            status = QLabel("ACTIVE")
-            status.setStyleSheet("color: #00ff7f; font-weight: bold;")
-        
+        status = QLabel("ACTIVE" if trader else "INACTIVE")
+        status.setStyleSheet("color: #00ff7f; font-weight: bold;" if trader else "color: #ff4757; font-weight: bold;")
         status_layout.addWidget(status)
+        
         status_layout.addStretch()
         layout.addLayout(status_layout)
 
         # Pair selection
         pair_combo = QComboBox()
-        if account_num == 1:
-            pair_combo.addItems(["BTC/USDT"])
-        elif account_num == 2:
-            pair_combo.addItems(["ETH/USDT"])
-        else:
-            pair_combo.addItems(["SOL/USDT"])
+        pair_combo.addItems(["BTC/USDT", "ETH/USDT", "SOL/USDT"])
         layout.addWidget(pair_combo)
 
         # Leverage and balance info
-        leverage_label = QLabel(f"20x Leverage" if account_num != 2 else "15x Leverage")
+        leverage_label = QLabel(f"20x Leverage")
         leverage_label.setStyleSheet("color: #888; font-size: 11px;")
         layout.addWidget(leverage_label)
 
-        balance_label = QLabel("Balance: $5,247.83")
+        balance_label = QLabel("Balance: $--" if not trader else f"Balance: $5,247.83")
         balance_label.setStyleSheet("color: #ffffff; font-size: 11px;")
         layout.addWidget(balance_label)
 
-        pnl_label = QLabel("PnL: +$147.83")
+        pnl_label = QLabel("PnL: --" if not trader else "PnL: +$147.83")
         pnl_label.setStyleSheet("color: #00ff7f; font-size: 11px;")
         layout.addWidget(pnl_label)
 
@@ -300,11 +296,13 @@ class HyperliquidSniper(QMainWindow):
 
         pub_key = QLineEdit()
         pub_key.setPlaceholderText("Public key")
+        pub_key.setText(trader.api_key[:6] + "..." if trader else "")
         layout.addWidget(pub_key)
 
         priv_key = QLineEdit()
         priv_key.setPlaceholderText("Private key")
         priv_key.setEchoMode(QLineEdit.EchoMode.Password)
+        priv_key.setText("********" if trader else "")
         layout.addWidget(priv_key)
 
         # Master/Subscriber checkboxes
@@ -508,15 +506,17 @@ class HyperliquidSniper(QMainWindow):
 
         # Long/Short buttons
         trade_buttons_layout = QHBoxLayout()
-        long_btn = QPushButton("LONG")
-        long_btn.setStyleSheet("background-color: #00ff7f; color: #000; font-weight: bold; padding: 12px; border-radius: 6px; font-size: 14px;")
-        
-        short_btn = QPushButton("SHORT")
-        short_btn.setStyleSheet("background-color: #ff4757; color: #fff; font-weight: bold; padding: 12px; border-radius: 6px; font-size: 14px;")
-        
-        trade_buttons_layout.addWidget(long_btn)
-        trade_buttons_layout.addWidget(short_btn)
+        self.long_btn = QPushButton("LONG")
+        self.long_btn.setStyleSheet("background-color: #00ff7f; color: #000000; font-weight: bold; padding: 12px; border-radius: 6px; font-size: 14px;")
+        self.short_btn = QPushButton("SHORT")
+        self.short_btn.setStyleSheet("background-color: #ff4757; color: #FFFFFF; font-weight: bold; padding: 12px; border-radius: 6px; font-size: 14px;")
+        trade_buttons_layout.addWidget(self.long_btn)
+        trade_buttons_layout.addWidget(self.short_btn)
         right_layout.addLayout(trade_buttons_layout)
+
+        # Connect trading buttons to backend
+        self.long_btn.clicked.connect(self.place_long_order)
+        self.short_btn.clicked.connect(self.place_short_order)
 
         # Order split section
         split_cb = QCheckBox("Order split")
@@ -598,7 +598,7 @@ class HyperliquidSniper(QMainWindow):
             <script type="text/javascript">
                 new TradingView.widget({
                     "width": "100%",
-                    "height": "600%",
+                    "height": 600,
                     "symbol": "BINANCE:BTCUSDT",
                     "interval": "15",
                     "timezone": "Etc/UTC",
@@ -626,6 +626,30 @@ class HyperliquidSniper(QMainWindow):
         </body>
         </html>
         '''
+
+    def place_long_order(self):
+        self.place_order(direction="buy")
+
+    def place_short_order(self):
+        self.place_order(direction="sell")
+
+    def place_order(self, direction):
+        # Example: place order for all loaded accounts (can be refined for per-account)
+        from core.order_splitter import generate_splits
+        import asyncio
+        order_type = "market" if self.market_btn.isChecked() else "limit"
+        size = 1.0  # TODO: get from UI
+        price = None  # TODO: get from UI if limit
+        symbol = "BTCUSDT"  # TODO: get from UI
+        for trader in getattr(self, 'trader_accounts', []):
+            async def do_order(trader=trader):
+                await trader.place_order(symbol, direction, order_type, size, price)
+            try:
+                loop = asyncio.get_running_loop()
+            except RuntimeError:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+            loop.create_task(do_order())
 
 
 if __name__ == "__main__":

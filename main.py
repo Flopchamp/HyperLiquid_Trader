@@ -1,12 +1,12 @@
 # main.py
 import sys
 from PyQt6.QtWidgets import QApplication
-from ui.main_window import MainWindow
+from ui.hyperliquid_sniper import HyperliquidSniper
 
 def main():
-    print("Starting Hyperliquid Trader App...")
+    print("Starting Hyperliquid Sniper UI...")
     app = QApplication(sys.argv)
-    window = MainWindow()
+    window = HyperliquidSniper()
     window.show()
     sys.exit(app.exec())
 
