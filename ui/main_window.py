@@ -47,6 +47,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("Hyperliquid Multi-Account Trader")
         self.setGeometry(100, 100, 1200, 800)
+        self.setWindowFlags(self.windowFlags() | Qt.WindowType.FramelessWindowHint)
         self.initUI()
 
     def initUI(self):

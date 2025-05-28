@@ -131,41 +131,51 @@ class HyperliquidSniper(QMainWindow):
     def initUI(self):
         from utils.config_loader import load_api_keys
         from core.trader import TraderAccount
-
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
-
-        # Main vertical layout to include header
         main_container = QVBoxLayout(central_widget)
         main_container.setSpacing(0)
         main_container.setContentsMargins(0, 0, 0, 0)
-
-        # Add header bar
         header_bar = self.create_header_bar()
         main_container.addWidget(header_bar)
-
-        # Content area
+        # Content area in a scroll area for responsiveness
         content_widget = QWidget()
         main_layout = QHBoxLayout(content_widget)
         main_layout.setSpacing(10)
         main_layout.setContentsMargins(10, 10, 10, 10)
-
         # Load accounts from config
         self.accounts_config = load_api_keys()[:10]
         self.trader_accounts = [TraderAccount(**cfg) for cfg in self.accounts_config]
-
-        # Create the three main panels
-        left_panel = self.create_left_panel()
-        center_panel = self.create_center_panel()
-        right_panel = self.create_right_panel()
-
-        # Add panels to main layout with proper proportions
-        main_layout.addLayout(left_panel, 2)  # 20% width
-        main_layout.addLayout(center_panel, 5)  # 50% width
-        main_layout.addLayout(right_panel, 3)  # 30% width
-
-        # Add content to main container
-        main_container.addWidget(content_widget)
+        # Wrap each panel in its own scroll area for small screens
+        left_panel_scroll = QScrollArea()
+        left_panel_scroll.setWidgetResizable(True)
+        left_panel_widget = QWidget()
+        left_panel_layout = self.create_left_panel()
+        left_panel_widget.setLayout(left_panel_layout)
+        left_panel_scroll.setWidget(left_panel_widget)
+        center_panel_scroll = QScrollArea()
+        center_panel_scroll.setWidgetResizable(True)
+        center_panel_widget = QWidget()
+        center_panel_layout = self.create_center_panel()
+        center_panel_widget.setLayout(center_panel_layout)
+        center_panel_scroll.setWidget(center_panel_widget)
+        right_panel_scroll = QScrollArea()
+        right_panel_scroll.setWidgetResizable(True)
+        right_panel_widget = QWidget()
+        right_panel_layout = self.create_right_panel()
+        right_panel_widget.setLayout(right_panel_layout)
+        right_panel_scroll.setWidget(right_panel_widget)
+        main_layout.addWidget(left_panel_scroll, 2)  # 20% width
+        main_layout.addWidget(center_panel_scroll, 5)  # 50% width
+        main_layout.addWidget(right_panel_scroll, 3)  # 30% width
+        # Wrap content_widget in a scroll area
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setWidget(content_widget)
+        main_container.addWidget(scroll_area)
+        # Set minimum sizes for better small screen support
+        content_widget.setMinimumWidth(900)
+        content_widget.setMinimumHeight(600)
 
     def create_header_bar(self):
         """Create the top header bar"""
