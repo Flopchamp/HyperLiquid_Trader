@@ -1,0 +1,14 @@
+2025-05-27 01:57:06,271 ERROR Task was destroyed but it is pending!
+task: <Task pending name='Task-2' coro=<ControlsPanel.on_add_to_position.<locals>.do_add() running at C:\Users\alooh\Desktop\Upwork\hyperliquid_trader\ui\controls_panel.py:286>>
+2025-05-27 01:57:06,303 ERROR Task was destroyed but it is pending!
+task: <Task pending name='Task-3' coro=<ControlsPanel.on_add_to_position.<locals>.do_add() running at C:\Users\alooh\Desktop\Upwork\hyperliquid_trader\ui\controls_panel.py:286>>
+2025-05-27 01:57:06,304 ERROR Task was destroyed but it is pending!
+task: <Task pending name='Task-4' coro=<ControlsPanel.on_add_to_position.<locals>.do_add() running at C:\Users\alooh\Desktop\Upwork\hyperliquid_trader\ui\controls_panel.py:286>>
+2025-05-27 01:57:06,304 ERROR Task was destroyed but it is pending!
+task: <Task pending name='Task-5' coro=<ControlsPanel.on_add_to_position.<locals>.do_add() running at C:\Users\alooh\Desktop\Upwork\hyperliquid_trader\ui\controls_panel.py:286>>
+2025-05-27 01:57:06,304 ERROR Task was destroyed but it is pending!
+task: <Task pending name='Task-6' coro=<ControlsPanel.on_add_to_position.<locals>.do_add() running at C:\Users\alooh\Desktop\Upwork\hyperliquid_trader\ui\controls_panel.py:286>>
+2025-05-27 01:57:06,305 ERROR Task was destroyed but it is pending!
+task: <Task pending name='Task-1' coro=<AccountPanel.__init__.<locals>.listen_updates() running at C:\Users\alooh\Desktop\Upwork\hyperliquid_trader\ui\account_panel.py:38>>
+2025-05-27 02:05:15,818 ERROR Task was destroyed but it is pending!
+task: <Task pending name='Task-1' coro=<AccountPanel.__init__.<locals>.listen_updates() running at C:\Users\alooh\Desktop\Upwork\hyperliquid_trader\ui\account_panel.py:38>>
