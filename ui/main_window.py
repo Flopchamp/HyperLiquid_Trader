@@ -47,7 +47,6 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("Hyperliquid Multi-Account Trader")
         self.setGeometry(100, 100, 1200, 800)
-        self.setWindowFlags(self.windowFlags() | Qt.WindowType.FramelessWindowHint)
         self.initUI()
 
     def initUI(self):
@@ -161,9 +160,51 @@ class MainWindow(QMainWindow):
 
     def close_all_positions(self):
         print("Close All clicked")
-        # TODO: Implement logic to close all positions for all accounts
+        # Iterate through all account panels and call their trader_account's close_all_positions
+        # Assuming the UI should close positions for ALL symbols for ALL accounts when this button is clicked.
+        # If a specific symbol is needed, the UI should provide it.
+        # For now, we'll call close_all_positions without a symbol, which the modified trader.py function will handle as "all symbols for that account"
+        import asyncio
+        for panel in self.account_panels:
+            if panel.trader_account:
+                async def do_close_positions(trader_acc=panel.trader_account):
+                    try:
+                        result = await trader_acc.close_all_positions() # No symbol, so closes all for this account
+                        panel.log_status(f"Close all positions result: {result}")
+                        self.status_bar.showMessage(f"Account {trader_acc.account_id}: Close all positions initiated.", 5000)
+                    except Exception as e:
+                        error_msg = f"Error closing positions for account {trader_acc.account_id}: {e}"
+                        panel.log_status(error_msg)
+                        self.status_bar.showMessage(error_msg, 5000)
+                
+                try:
+                    loop = asyncio.get_running_loop()
+                except RuntimeError:
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                loop.create_task(do_close_positions())
 
     def cancel_all_orders(self):
         print("Cancel All clicked")
-        # TODO: Implement logic to cancel all orders for all accounts
+        # Iterate through all account panels and call their trader_account's cancel_all_orders
+        # Assuming the UI should cancel orders for ALL symbols for ALL accounts when this button is clicked.
+        import asyncio
+        for panel in self.account_panels:
+            if panel.trader_account:
+                async def do_cancel_orders(trader_acc=panel.trader_account):
+                    try:
+                        result = await trader_acc.cancel_all_orders() # No symbol, so cancels all for this account
+                        panel.log_status(f"Cancel all orders result: {result}")
+                        self.status_bar.showMessage(f"Account {trader_acc.account_id}: Cancel all orders initiated.", 5000)
+                    except Exception as e:
+                        error_msg = f"Error cancelling orders for account {trader_acc.account_id}: {e}"
+                        panel.log_status(error_msg)
+                        self.status_bar.showMessage(error_msg, 5000)
+                
+                try:
+                    loop = asyncio.get_running_loop()
+                except RuntimeError:
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                loop.create_task(do_cancel_orders())
 

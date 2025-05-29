@@ -1,8 +1,8 @@
 {
     "accounts": [
         {
-            "api_key": "your_api_key_1",
-            "api_secret": "your_api_secret_1",
+            "api_key": "0xa6290C14cBa2EFfdFf080fb4be530C31f96F2B15",
+            "api_secret": "0xdc44d8c1cd6f50b61cdfd052341a26ff0ede4204a169e93d75e06b71e7619b75",
             "account_id": 1
         }
     ]
